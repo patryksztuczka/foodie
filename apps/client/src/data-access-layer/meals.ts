@@ -67,14 +67,14 @@ export type MealItem = z.infer<typeof MealItemSchema>;
 
 export const listMealsByDate = async (date: string) => {
   const usp = new URLSearchParams({ date });
-  const response = await fetch(`http://127.0.0.1:3000/api/v1/meals?${usp.toString()}`);
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/meals?${usp.toString()}`);
   if (!response.ok) throw new Error('Failed to fetch meals');
   const json = await response.json();
   return ListMealsResponseSchema.parse(json);
 };
 
 export const deleteMealItem = async (id: string): Promise<void> => {
-  const response = await fetch(`http://127.0.0.1:3000/api/v1/meals/${id}`, {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/meals/${id}`, {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to delete meal item');
@@ -94,7 +94,7 @@ export type ListMealsSummaryResponse = z.infer<typeof ListMealsSummaryResponseSc
 
 export const listMealSummary = async (from: string, to: string) => {
   const usp = new URLSearchParams({ from, to });
-  const response = await fetch(`http://127.0.0.1:3000/api/v1/meals/summary?${usp.toString()}`);
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/meals/summary?${usp.toString()}`);
   if (!response.ok) throw new Error('Failed to fetch meals summary');
   const json = await response.json();
   return ListMealsSummaryResponseSchema.parse(json);

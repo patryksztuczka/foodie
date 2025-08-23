@@ -26,7 +26,7 @@ export type SearchResult = z.infer<typeof SearchResultSchema>;
 
 export const search = async (params: string): Promise<SearchResult> => {
   if (!params) return { items: [] } as SearchResult;
-  const response = await fetch(`http://127.0.0.1:3000/api/v1/search?${params}`);
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/search?${params}`);
   if (!response.ok) throw new Error('Failed to search');
   const json = await response.json();
   return SearchResultSchema.parse(json);
