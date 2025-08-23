@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2 } from 'lucide-react';
 
@@ -94,6 +94,21 @@ export const MealsList = () => {
   }, [mealsData]);
 
   const [activeMeal, setActiveMeal] = useState<MealKey | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setActiveMeal(null);
+    };
+    if (activeMeal) {
+      document.addEventListener('keydown', handleKey);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = '';
+    };
+  }, [activeMeal]);
 
   const mutation = useMutation({
     mutationFn: ({ meal, item }: { meal: MealKey; item: SearchItem }) =>
@@ -208,14 +223,34 @@ export const MealsList = () => {
             </ul>
 
             {activeMeal === mealKey && (
-              <div className="mt-4 rounded border bg-white p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="text-sm font-medium">Dodaj produkt</div>
-                  <button className="text-sm text-gray-600 hover:text-gray-900" onClick={() => setActiveMeal(null)}>
-                    Zamknij
-                  </button>
+              <div
+                ref={overlayRef}
+                className="fixed inset-0 z-50 flex items-start justify-center p-4 backdrop-blur-sm"
+                onMouseDown={(e) => {
+                  if (e.target === overlayRef.current) setActiveMeal(null);
+                }}
+              >
+                <div className="mx-auto mt-24 w-full max-w-2xl rounded-xl border border-gray-200 bg-white/90 shadow-2xl">
+                  <div className="flex items-center justify-between border-b px-4 py-2">
+                    <div className="text-sm font-medium">Dodaj do: {mealLabels[mealKey]}</div>
+                    <button
+                      className="rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      onClick={() => setActiveMeal(null)}
+                    >
+                      Zamknij
+                    </button>
+                  </div>
+                  <div className="px-4 py-3">
+                    <ProductSearch
+                      autoFocus
+                      hideLabel
+                      onSelect={(item) => {
+                        handleAddItem(mealKey, item);
+                        setActiveMeal(null);
+                      }}
+                    />
+                  </div>
                 </div>
-                <ProductSearch onSelect={(item) => handleAddItem(mealKey, item)} />
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { search, type SearchItem } from '../data-access-layer/search.ts';
@@ -6,11 +6,18 @@ import { useDebounce } from '../hooks/use-debounce.ts';
 
 export type ProductSearchProps = {
   onSelect: (item: SearchItem) => void;
+  autoFocus?: boolean;
+  hideLabel?: boolean;
 };
 
-export const ProductSearch = ({ onSelect }: ProductSearchProps) => {
+export const ProductSearch = ({ onSelect, autoFocus, hideLabel }: ProductSearchProps) => {
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query, 300);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (autoFocus && inputRef.current) inputRef.current.focus();
+  }, [autoFocus]);
 
   const params = useMemo(() => {
     const usp = new URLSearchParams();
@@ -27,12 +34,17 @@ export const ProductSearch = ({ onSelect }: ProductSearchProps) => {
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="product-search" className="block text-sm font-medium">
-          Wyszukaj produkt
-        </label>
+        {!hideLabel && (
+          <label htmlFor="product-search" className="block text-sm font-medium">
+            Wyszukaj produkt
+          </label>
+        )}
         <input
           id="product-search"
-          className="mt-1 w-full rounded border p-2"
+          ref={inputRef}
+          className={`w-full rounded border p-3 text-base outline-none focus:ring-2 focus:ring-blue-500 ${
+            hideLabel ? '' : 'mt-1'
+          }`}
           placeholder="np. jogurt, chleb, masło"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -42,7 +54,7 @@ export const ProductSearch = ({ onSelect }: ProductSearchProps) => {
       {isFetching && <div>Szukanie…</div>}
       {error && <div className="text-red-600">Błąd podczas wyszukiwania</div>}
 
-      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <ul>
         {(data?.items ?? []).map((item) => (
           <li
             key={item.code}
