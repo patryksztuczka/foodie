@@ -124,3 +124,66 @@ export async function deleteMealItem(req: Request, res: Response): Promise<void>
 
   res.status(204).end();
 }
+
+const getMealsSummaryQuerySchema = z.object({
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+export async function listMealsSummary(req: Request, res: Response): Promise<void> {
+  const parsed = getMealsSummaryQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'invalid_query_parameters', details: z.treeifyError(parsed.error) });
+    return;
+  }
+
+  const { from, to } = parsed.data;
+
+  // Build inclusive date range list to ensure zeros are returned for empty days
+  const toDateOnlyString = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const start = new Date(from + 'T00:00:00');
+  const end = new Date(to + 'T00:00:00');
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
+    res.status(400).json({ error: 'invalid_date_range' });
+    return;
+  }
+
+  const rangeDates: string[] = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    rangeDates.push(toDateOnlyString(d));
+  }
+
+  const { data, error } = await supabase
+    .from('meal_content')
+    .select('date, productEnergyKcal, productQuantity, productQuantityUnit')
+    .gte('date', from)
+    .lte('date', to);
+
+  if (error) {
+    console.error(error);
+    res.status(502).json({ error: 'db_query_failed' });
+    return;
+  }
+
+  const totalsByDate = new Map<string, number>();
+  for (const row of data ?? []) {
+    const dateStr: string = row.date;
+    const unit: string = (row.productQuantityUnit ?? '').toLowerCase();
+    const quantity: number = Number(row.productQuantity ?? 0) || 0;
+    const perHundredUnits = ['g', 'gram', 'grams', 'ml', 'milliliter', 'milliliters'];
+    const isPerHundred = perHundredUnits.includes(unit);
+    const factor = quantity > 0 && isPerHundred ? quantity / 100 : 1;
+    const kcal = (Number(row.productEnergyKcal) || 0) * factor;
+    totalsByDate.set(dateStr, (totalsByDate.get(dateStr) ?? 0) + kcal);
+  }
+
+  const days = rangeDates.map((d) => ({ date: d, calories: Math.round(totalsByDate.get(d) ?? 0) }));
+
+  res.status(200).json({ days });
+}

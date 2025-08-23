@@ -7,7 +7,9 @@ import { ProductSearch } from './product-search.tsx';
 import { addMealItem, listMealsByDate, type MealItem, deleteMealItem } from '../data-access-layer/meals.ts';
 import { type MealKey } from '../types/meals.ts';
 
-export const MealsList = () => {
+type MealsListProps = { date: string };
+
+export const MealsList = ({ date }: MealsListProps) => {
   const mealOrder: readonly MealKey[] = ['breakfast', 'second-breakfast', 'lunch', 'snack', 'dinner'];
 
   const mealLabels: Record<MealKey, string> = {
@@ -20,17 +22,9 @@ export const MealsList = () => {
 
   const queryClient = useQueryClient();
 
-  const today = useMemo(() => {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  }, []);
-
   const { data: mealsData } = useQuery({
-    queryKey: ['meals', today],
-    queryFn: () => listMealsByDate(today),
+    queryKey: ['meals', date],
+    queryFn: () => listMealsByDate(date),
   });
 
   const totals = useMemo(() => {
@@ -114,7 +108,7 @@ export const MealsList = () => {
     mutationFn: ({ meal, item }: { meal: MealKey; item: SearchItem }) =>
       addMealItem({
         mealType: meal,
-        date: today,
+        date,
         productName: item.name,
         productBrands: item.brands || null,
         productEnergyKcal: item.nutriments.energyKcal100g ?? 0,
@@ -126,13 +120,13 @@ export const MealsList = () => {
       }),
     onMutate: async ({ meal, item }) => {
       setActiveMeal(null);
-      await queryClient.cancelQueries({ queryKey: ['meals', today] });
-      const prev = queryClient.getQueryData<{ items: MealItem[] }>(['meals', today]);
-      queryClient.setQueryData<{ items: MealItem[] }>(['meals', today], (old) => {
+      await queryClient.cancelQueries({ queryKey: ['meals', date] });
+      const prev = queryClient.getQueryData<{ items: MealItem[] }>(['meals', date]);
+      queryClient.setQueryData<{ items: MealItem[] }>(['meals', date], (old) => {
         const items = Array.isArray(old?.items) ? old.items.slice() : [];
         items.push({
           id: `optimistic-${Math.random().toString(36).slice(2)}`,
-          date: today,
+          date,
           mealType: meal,
           productName: item.name,
           productBrands: item.brands || null,
@@ -148,10 +142,12 @@ export const MealsList = () => {
       return { prev };
     },
     onError: (_err, _vars, ctx: { prev?: { items: MealItem[] } } | undefined) => {
-      if (ctx?.prev) queryClient.setQueryData(['meals', today], ctx.prev);
+      if (ctx?.prev) queryClient.setQueryData(['meals', date], ctx.prev);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['meals', today] });
+      queryClient.invalidateQueries({ queryKey: ['meals', date] });
+      // also refresh week summary caches
+      queryClient.invalidateQueries({ queryKey: ['meals-summary'] });
     },
   });
 
@@ -162,26 +158,28 @@ export const MealsList = () => {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteMealItem(id),
     onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: ['meals', today] });
-      const prev = queryClient.getQueryData<{ items: MealItem[] }>(['meals', today]);
-      queryClient.setQueryData<{ items: MealItem[] }>(['meals', today], (old) => {
+      await queryClient.cancelQueries({ queryKey: ['meals', date] });
+      const prev = queryClient.getQueryData<{ items: MealItem[] }>(['meals', date]);
+      queryClient.setQueryData<{ items: MealItem[] }>(['meals', date], (old) => {
         const items = Array.isArray(old?.items) ? old.items.filter((x) => x.id !== id) : [];
         return { items };
       });
       return { prev } as { prev?: { items: MealItem[] } };
     },
     onError: (_err, _vars, ctx: { prev?: { items: MealItem[] } } | undefined) => {
-      if (ctx?.prev) queryClient.setQueryData(['meals', today], ctx.prev);
+      if (ctx?.prev) queryClient.setQueryData(['meals', date], ctx.prev);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['meals', today] });
+      queryClient.invalidateQueries({ queryKey: ['meals', date] });
+      // also refresh week summary caches
+      queryClient.invalidateQueries({ queryKey: ['meals-summary'] });
     },
   });
 
   return (
     <div className="space-y-6 p-4">
       <div className="text-sm text-gray-600">
-        Data: <span className="font-medium text-gray-900">{today}</span>
+        Data: <span className="font-medium text-gray-900">{date}</span>
       </div>
       <div className="flex flex-col gap-4">
         {mealOrder.map((mealKey) => (

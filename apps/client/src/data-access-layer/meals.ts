@@ -79,3 +79,23 @@ export const deleteMealItem = async (id: string): Promise<void> => {
   });
   if (!response.ok) throw new Error('Failed to delete meal item');
 };
+
+const MealSummaryDaySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  calories: z.number(),
+});
+
+const ListMealsSummaryResponseSchema = z.object({
+  days: z.array(MealSummaryDaySchema).default([]),
+});
+
+export type MealSummaryDay = z.infer<typeof MealSummaryDaySchema>;
+export type ListMealsSummaryResponse = z.infer<typeof ListMealsSummaryResponseSchema>;
+
+export const listMealSummary = async (from: string, to: string) => {
+  const usp = new URLSearchParams({ from, to });
+  const response = await fetch(`http://127.0.0.1:3000/api/v1/meals/summary?${usp.toString()}`);
+  if (!response.ok) throw new Error('Failed to fetch meals summary');
+  const json = await response.json();
+  return ListMealsSummaryResponseSchema.parse(json);
+};
