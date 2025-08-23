@@ -15,6 +15,6 @@ app.get('/', (_req, res) => {
 
 app.use('/api/v1', v1Router);
 
-app.listen(port, '127.0.0.1', () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server is running on port ${port}`);
 });
