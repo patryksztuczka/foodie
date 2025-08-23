@@ -69,3 +69,9 @@ This document defines the rules we strictly follow to keep the codebase readable
 
 - Avoid single-letter identifiers for variables, parameters, and functions. Exceptions: conventional loop indexes (i, j) inside short, local loops only.
 - Prefer explicit descriptive names (response, devicesResponse, playlistTracks, normalizedTracks).
+- File and directory names use kebab-case (e.g., `search-controller.ts`, `open-food-facts-service.ts`).
+
+## Imports
+
+- While importing things from other files, use .ts extension at the end
+- If imported value is used only as a type, alywas add `type` key word (e.g., `import { type User } from ./schemas/user.ts`)

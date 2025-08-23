@@ -2,6 +2,18 @@
 
 These guidelines apply to the server at `apps/server`.
 
+## Folder structure
+
+All names are kebab-case. Public HTTP surface is versioned and mounted under `/api/v1`.
+
+- `src/controllers/`: Request handlers. Validate inputs (query/body/params) at the boundary, delegate to services, never call external APIs directly. No business logic.
+- `src/services/`: Side-effect adapters to external systems (e.g., Open Food Facts, databases). Enforce timeouts and map external data to internal shapes. Validate outbound responses with Zod before returning.
+- `src/schemas/`: Zod schemas and TypeScript types for server-owned payloads (requests/responses/domain). No runtime side effects.
+- `src/routes/`: Express routers grouped by version and feature. Only wires HTTP verbs to controllers and applies middleware.
+- `src/config/`: Environment and configuration modules. Single read location for `process.env` and derived config.
+- `src/types/`: Type-only declarations needed across modules. No runtime code.
+- `src/`: App bootstrap (Express app creation, CORS, route mounting). No business logic.
+
 ## Runtime and modules
 
 - Use ESM and modern ES2022 features. Prefer import/export consistently.

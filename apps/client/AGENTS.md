@@ -2,10 +2,20 @@
 
 These guidelines apply to the client at `apps/client`.
 
+## Folder structure
+
+All names are kebab-case. Keep UI declarative and push side effects to hooks or data-access modules.
+
+- `src/components/`: Presentational and container components. No direct fetch calls; import hooks or data-access functions. Keep props explicit and typed.
+- `src/hooks/`: Reusable hooks for local concerns (e.g., debouncing, event listeners). No cross-cutting app state here.
+- `src/data-access-layer/`: Thin modules that call server endpoints, validate with Zod, and return typed results. No UI logic.
+- `src/`: App bootstrap (`app.tsx`, React Query provider), entry (`main.tsx`), global styles.
+
 ## Components and structure
 
-- Prefer functional components with explicit props types.
-- Keep components small and focused; extract pure utilities out of React.
+- Clarity and Reuse: Every component and page should be modular and reusable. Avoid duplication by factoring repeated UI patterns into components.
+- Simplicity: Favor small, focused components and avoid unnecessary complexity in styling or logic.
+- Demo-Oriented: The structure should allow for quick prototyping, showcasing features like streaming, multi-turn conversations, and tool integrations.
 
 ## State and data flow
 

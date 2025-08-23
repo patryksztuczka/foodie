@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { v1Router } from './routes/v1.ts';
 
 const app = express();
 
@@ -9,6 +10,8 @@ app.get('/', (req, res) => {
   res.send('Hello World');
 });
 
-app.listen(3000, () => {
+app.use('/api/v1', v1Router);
+
+app.listen(3000, '127.0.0.1', () => {
   console.log('Server is running on port 3000');
 });
