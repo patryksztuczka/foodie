@@ -6,7 +6,7 @@ const MealContentRowSchema = z.object({
   id: z.string(),
   createdAt: z.string(),
   date: z.string(),
-  mealType: z.string(),
+  mealType: z.enum(['breakfast', 'second-breakfast', 'lunch', 'snack', 'dinner']),
   productName: z.string(),
   productBrands: z.string().nullable(),
   productEnergyKcal: z.number(),

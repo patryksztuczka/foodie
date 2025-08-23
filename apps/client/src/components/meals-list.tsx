@@ -40,7 +40,6 @@ export const MealsList = () => {
       dinner: [],
     };
     (mealsData?.items ?? []).forEach((row: MealItem) => {
-      const mk = row.mealType as MealKey;
       const item: SearchItem = {
         code: row.id,
         name: row.productName,
@@ -54,7 +53,7 @@ export const MealsList = () => {
         productQuantity: row.productQuantity,
         productQuantityUnit: row.productQuantityUnit,
       };
-      grouped[mk].push(item);
+      grouped[row.mealType].push(item);
     });
     return grouped;
   }, [mealsData]);

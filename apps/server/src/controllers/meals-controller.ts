@@ -100,5 +100,5 @@ export async function listMealsByDate(req: Request, res: Response): Promise<void
     productQuantityUnit: row.productQuantityUnit,
   }));
 
-  res.json({ items });
+  res.status(200).json({ items });
 }
