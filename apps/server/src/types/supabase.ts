@@ -41,31 +41,46 @@ export type Database = {
     Tables: {
       meal_content: {
         Row: {
-          amout: number
-          created_at: string
+          createdAt: string
           date: string
           id: string
-          meal_type: string
-          measure: string
-          product_id: string
+          mealType: string
+          productBrands: string | null
+          productCarbs100g: number
+          productEnergyKcal: number
+          productFat100g: number
+          productName: string
+          productProteins100g: number
+          productQuantity: number
+          productQuantityUnit: string
         }
         Insert: {
-          amout: number
-          created_at?: string
+          createdAt?: string
           date: string
           id?: string
-          meal_type: string
-          measure: string
-          product_id: string
+          mealType: string
+          productBrands?: string | null
+          productCarbs100g: number
+          productEnergyKcal: number
+          productFat100g: number
+          productName: string
+          productProteins100g: number
+          productQuantity: number
+          productQuantityUnit: string
         }
         Update: {
-          amout?: number
-          created_at?: string
+          createdAt?: string
           date?: string
           id?: string
-          meal_type?: string
-          measure?: string
-          product_id?: string
+          mealType?: string
+          productBrands?: string | null
+          productCarbs100g?: number
+          productEnergyKcal?: number
+          productFat100g?: number
+          productName?: string
+          productProteins100g?: number
+          productQuantity?: number
+          productQuantityUnit?: string
         }
         Relationships: []
       }

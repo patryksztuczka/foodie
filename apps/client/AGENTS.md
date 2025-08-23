@@ -20,7 +20,6 @@ All names are kebab-case. Keep UI declarative and push side effects to hooks or 
 ## State and data flow
 
 - Lift state only when needed; prefer local state for local concerns.
-- Derive state, avoid duplication; memoize with `useMemo`/`useCallback` only for measured needs.
 
 ## Styling
 
