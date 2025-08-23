@@ -13,8 +13,9 @@ const openFoodFactsProductSchema = z.object({
   product_name_pl: z.string().optional(),
   product_name: z.string().optional(),
   brands: z.string().optional(),
-  image_url: z.string().optional(),
   nutriments: openFoodFactsNutrimentsSchema.optional().default({}),
+  product_quantity: z.coerce.number().optional(),
+  product_quantity_unit: z.string().optional(),
 });
 const openFoodFactsSearchSchema = z.object({
   products: z.array(openFoodFactsProductSchema).default([]),
@@ -59,17 +60,19 @@ export async function searchProducts({ query, page, pageSize, signal }: SearchPr
     const namePl = product.product_name_pl;
     const name = product.product_name;
     const brands = product.brands;
-    const imageUrl = product.image_url;
     const energyKcal100g = product.nutriments['energy-kcal_100g'];
     const proteins100g = product.nutriments.proteins_100g;
     const fat100g = product.nutriments.fat_100g;
     const carbs100g = product.nutriments.carbohydrates_100g;
+    const productQuantity = product.product_quantity;
+    const productQuantityUnit = product.product_quantity_unit;
 
     return {
       code,
       name: namePl ?? name ?? '',
       brands: brands ?? '',
-      imageUrl: imageUrl ?? '',
+      productQuantity,
+      productQuantityUnit,
       nutriments: {
         energyKcal100g,
         proteins100g,

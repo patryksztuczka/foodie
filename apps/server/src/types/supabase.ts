@@ -41,31 +41,46 @@ export type Database = {
     Tables: {
       meal_content: {
         Row: {
-          amout: number
-          created_at: string
+          createdAt: string
           date: string
           id: string
-          meal_type: string
-          measure: string
-          product_id: string
+          mealType: Database["public"]["Enums"]["mealtype"]
+          productBrands: string | null
+          productCarbs100g: number
+          productEnergyKcal: number
+          productFat100g: number
+          productName: string
+          productProteins100g: number
+          productQuantity: number
+          productQuantityUnit: string
         }
         Insert: {
-          amout: number
-          created_at?: string
+          createdAt?: string
           date: string
           id?: string
-          meal_type: string
-          measure: string
-          product_id: string
+          mealType: Database["public"]["Enums"]["mealtype"]
+          productBrands?: string | null
+          productCarbs100g: number
+          productEnergyKcal: number
+          productFat100g: number
+          productName: string
+          productProteins100g: number
+          productQuantity: number
+          productQuantityUnit: string
         }
         Update: {
-          amout?: number
-          created_at?: string
+          createdAt?: string
           date?: string
           id?: string
-          meal_type?: string
-          measure?: string
-          product_id?: string
+          mealType?: Database["public"]["Enums"]["mealtype"]
+          productBrands?: string | null
+          productCarbs100g?: number
+          productEnergyKcal?: number
+          productFat100g?: number
+          productName?: string
+          productProteins100g?: number
+          productQuantity?: number
+          productQuantityUnit?: string
         }
         Relationships: []
       }
@@ -77,7 +92,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      mealtype: "breakfast" | "second-breakfast" | "lunch" | "snack" | "dinner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -207,6 +222,8 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      mealtype: ["breakfast", "second-breakfast", "lunch", "snack", "dinner"],
+    },
   },
 } as const

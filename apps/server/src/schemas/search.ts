@@ -6,7 +6,8 @@ export const searchResponseSchema = z.object({
       code: z.string(),
       name: z.string(),
       brands: z.string(),
-      imageUrl: z.string(),
+      productQuantity: z.number().optional(),
+      productQuantityUnit: z.string().optional(),
       nutriments: z.object({
         energyKcal100g: z.number().optional(),
         proteins100g: z.number().optional(),
