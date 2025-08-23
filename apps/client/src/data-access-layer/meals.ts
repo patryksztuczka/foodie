@@ -72,3 +72,10 @@ export const listMealsByDate = async (date: string) => {
   const json = await response.json();
   return ListMealsResponseSchema.parse(json);
 };
+
+export const deleteMealItem = async (id: string): Promise<void> => {
+  const response = await fetch(`http://127.0.0.1:3000/api/v1/meals/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete meal item');
+};

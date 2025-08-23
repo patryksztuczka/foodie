@@ -102,3 +102,25 @@ export async function listMealsByDate(req: Request, res: Response): Promise<void
 
   res.status(200).json({ items });
 }
+
+const deleteParamsSchema = z.object({
+  id: z.string().min(1),
+});
+
+export async function deleteMealItem(req: Request, res: Response): Promise<void> {
+  const parsed = deleteParamsSchema.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'invalid_params', details: z.treeifyError(parsed.error) });
+    return;
+  }
+
+  const { id } = parsed.data;
+  const { error } = await supabase.from('meal_content').delete().eq('id', id);
+  if (error) {
+    console.error(error);
+    res.status(502).json({ error: 'db_delete_failed' });
+    return;
+  }
+
+  res.status(204).end();
+}

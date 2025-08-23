@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus, Trash2 } from 'lucide-react';
+
 import { type SearchItem } from '../data-access-layer/search.ts';
 import { ProductSearch } from './product-search.tsx';
-import { addMealItem, listMealsByDate, type MealItem } from '../data-access-layer/meals.ts';
+import { addMealItem, listMealsByDate, type MealItem, deleteMealItem } from '../data-access-layer/meals.ts';
 import { type MealKey } from '../types/meals.ts';
 
 export const MealsList = () => {
@@ -30,6 +32,39 @@ export const MealsList = () => {
     queryKey: ['meals', today],
     queryFn: () => listMealsByDate(today),
   });
+
+  const totals = useMemo(() => {
+    const items = mealsData?.items ?? [];
+    let energyKcal = 0;
+    let proteins = 0;
+    let fat = 0;
+    let carbs = 0;
+
+    for (const item of items) {
+      const quantity = item.productQuantity ?? 0;
+      const unit = (item.productQuantityUnit ?? '').toLowerCase();
+      const isPerHundredUnit =
+        unit === 'g' ||
+        unit === 'gram' ||
+        unit === 'grams' ||
+        unit === 'ml' ||
+        unit === 'milliliter' ||
+        unit === 'milliliters';
+      const factor = quantity > 0 && isPerHundredUnit ? quantity / 100 : 1;
+
+      energyKcal += (item.productEnergyKcal ?? 0) * factor;
+      proteins += (item.productProteins100g ?? 0) * factor;
+      fat += (item.productFat100g ?? 0) * factor;
+      carbs += (item.productCarbs100g ?? 0) * factor;
+    }
+
+    return {
+      energyKcal: Math.round(energyKcal),
+      proteins: Number(proteins.toFixed(1)),
+      fat: Number(fat.toFixed(1)),
+      carbs: Number(carbs.toFixed(1)),
+    } as const;
+  }, [mealsData]);
 
   const meals: Record<MealKey, SearchItem[]> = useMemo(() => {
     const grouped: Record<MealKey, (SearchItem & { amount?: number; measure?: string })[]> = {
@@ -109,12 +144,31 @@ export const MealsList = () => {
     mutation.mutate({ meal, item });
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteMealItem(id),
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['meals', today] });
+      const prev = queryClient.getQueryData<{ items: MealItem[] }>(['meals', today]);
+      queryClient.setQueryData<{ items: MealItem[] }>(['meals', today], (old) => {
+        const items = Array.isArray(old?.items) ? old.items.filter((x) => x.id !== id) : [];
+        return { items };
+      });
+      return { prev } as { prev?: { items: MealItem[] } };
+    },
+    onError: (_err, _vars, ctx: { prev?: { items: MealItem[] } } | undefined) => {
+      if (ctx?.prev) queryClient.setQueryData(['meals', today], ctx.prev);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['meals', today] });
+    },
+  });
+
   return (
     <div className="space-y-6 p-4">
       <div className="text-sm text-gray-600">
         Data: <span className="font-medium text-gray-900">{today}</span>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="flex flex-col gap-4">
         {mealOrder.map((mealKey) => (
           <div key={mealKey} className="rounded border p-4">
             <div className="flex items-center justify-between">
@@ -124,7 +178,7 @@ export const MealsList = () => {
                 aria-label={`Dodaj do ${mealLabels[mealKey]}`}
                 onClick={() => setActiveMeal(mealKey)}
               >
-                +
+                <Plus className="h-4 w-4" />
               </button>
             </div>
 
@@ -141,6 +195,14 @@ export const MealsList = () => {
                       </div>
                     )}
                   </div>
+                  <button
+                    className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded border text-gray-600 hover:bg-red-50 hover:text-red-600"
+                    aria-label={`Usuń ${item.name}`}
+                    title="Usuń"
+                    onClick={() => deleteMutation.mutate(String(item.code))}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </li>
               ))}
             </ul>
@@ -158,6 +220,25 @@ export const MealsList = () => {
             )}
           </div>
         ))}
+      </div>
+      <div className="rounded border p-3 text-sm">
+        <div className="flex items-center justify-between">
+          <div className="font-medium">Razem</div>
+          <div className="flex flex-wrap items-center gap-4">
+            <div>
+              kcal <span className="font-semibold">{totals.energyKcal}</span>
+            </div>
+            <div>
+              B <span className="font-semibold">{totals.proteins} g</span>
+            </div>
+            <div>
+              T <span className="font-semibold">{totals.fat} g</span>
+            </div>
+            <div>
+              W <span className="font-semibold">{totals.carbs} g</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
