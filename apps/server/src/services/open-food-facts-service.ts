@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import type { SearchResponse } from '../schemas/search.ts';
-import { searchResponseSchema } from '../schemas/search.ts';
+import { searchResponseSchema, type SearchResponse } from '../schemas/search.js';
 
 const openFoodFactsNutrimentsSchema = z.object({
   'energy-kcal_100g': z.coerce.number().optional(),

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 
-import { supabase } from '../supabase-config.ts';
+import { supabase } from '../supabase-config.js';
 
 const mealTypeSchema = z.enum(['breakfast', 'second-breakfast', 'lunch', 'snack', 'dinner']);
 

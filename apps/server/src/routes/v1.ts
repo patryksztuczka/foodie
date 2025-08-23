@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { searchController } from '../controllers/search-controller.ts';
-import { createMealItem, listMealsByDate, deleteMealItem, listMealsSummary } from '../controllers/meals-controller.ts';
+import { searchController } from '../controllers/search-controller.js';
+import { createMealItem, listMealsByDate, deleteMealItem, listMealsSummary } from '../controllers/meals-controller.js';
 
 export const v1Router: Router = Router();
 

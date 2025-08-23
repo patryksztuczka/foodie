@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 
-import { searchProducts } from '../services/open-food-facts-service.ts';
+import { searchProducts } from '../services/open-food-facts-service.js';
 
 const searchQuerySchema = z.object({
   q: z.string().trim().min(2).max(100),
