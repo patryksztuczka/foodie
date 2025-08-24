@@ -17,6 +17,20 @@ All names are kebab-case. Keep UI declarative and push side effects to hooks or 
 - Simplicity: Favor small, focused components and avoid unnecessary complexity in styling or logic.
 - Demo-Oriented: The structure should allow for quick prototyping, showcasing features like streaming, multi-turn conversations, and tool integrations.
 
+### Example component definition
+
+```
+type HeaderProps = {
+  readonly title: string;
+};
+
+export const Header = ({ title }: HeaderProps) => {
+  return (
+    <h1>{title}</h1>
+  );
+};
+```
+
 ## State and data flow
 
 - Lift state only when needed; prefer local state for local concerns.
