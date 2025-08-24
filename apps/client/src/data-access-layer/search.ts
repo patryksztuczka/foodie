@@ -31,3 +31,12 @@ export const search = async (params: string): Promise<SearchResult> => {
   const json = await response.json();
   return SearchResultSchema.parse(json);
 };
+
+export const searchByCode = async (code: string): Promise<SearchResult> => {
+  if (!code) return { items: [] } as SearchResult;
+  const params = new URLSearchParams({ code }).toString();
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/search/code?${params}`);
+  if (!response.ok) throw new Error('Failed to search by code');
+  const json = await response.json();
+  return SearchResultSchema.parse(json);
+};

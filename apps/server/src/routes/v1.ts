@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { searchController } from '../controllers/search-controller.js';
+import { searchController, searchByCodeController } from '../controllers/search-controller.js';
 import {
   createMealItem,
   listMealsByDate,
@@ -11,6 +11,7 @@ import {
 export const v1Router: Router = Router();
 
 v1Router.get('/search', searchController);
+v1Router.get('/search/code', searchByCodeController);
 v1Router.post('/meals', createMealItem);
 v1Router.get('/meals', listMealsByDate);
 v1Router.delete('/meals/:id', deleteMealItem);
