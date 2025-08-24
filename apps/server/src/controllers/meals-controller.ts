@@ -103,6 +103,46 @@ export async function listMealsByDate(req: Request, res: Response): Promise<void
   res.status(200).json({ items });
 }
 
+const updateMealItemParamsSchema = z.object({
+  id: z.string().min(1),
+});
+
+const updateMealItemBodySchema = z.object({
+  productQuantity: z.number().min(0),
+});
+
+export async function updateMealItem(req: Request, res: Response): Promise<void> {
+  const parsedParams = updateMealItemParamsSchema.safeParse(req.params);
+  if (!parsedParams.success) {
+    res.status(400).json({ error: 'invalid_params', details: z.treeifyError(parsedParams.error) });
+    return;
+  }
+
+  const parsedBody = updateMealItemBodySchema.safeParse(req.body);
+  if (!parsedBody.success) {
+    res.status(400).json({ error: 'invalid_body', details: z.treeifyError(parsedBody.error) });
+    return;
+  }
+
+  const { id } = parsedParams.data;
+  const { productQuantity } = parsedBody.data;
+
+  const { data, error } = await supabase
+    .from('meal_content')
+    .update({ productQuantity })
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    res.status(502).json({ error: 'db_update_failed' });
+    return;
+  }
+
+  res.status(200).json({ item: data });
+}
+
 const deleteParamsSchema = z.object({
   id: z.string().min(1),
 });

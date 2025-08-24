@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 import { type SearchItem } from '../data-access-layer/search.ts';
 import { ProductSearch } from './product-search.tsx';
 import { addMealItem, listMealsByDate, type MealItem, deleteMealItem } from '../data-access-layer/meals.ts';
 import { type MealKey } from '../types/meals.ts';
+import { MealListRow } from './meal-list-row.tsx';
 
 type MealsListProps = { date: string };
 
@@ -198,25 +199,12 @@ export const MealsList = ({ date }: MealsListProps) => {
             <ul className="mt-3 space-y-2">
               {meals[mealKey].length === 0 && <li className="text-sm text-gray-500">Brak produktów</li>}
               {meals[mealKey].map((item) => (
-                <li key={item.code} className="flex items-center gap-3 rounded border p-2">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{item.name || 'Bez nazwy'}</div>
-                    <div className="truncate text-xs text-gray-600">{item.brands}</div>
-                    {item.productQuantity != null && item.productQuantityUnit != null && (
-                      <div className="truncate text-xs text-gray-600">
-                        {item.productQuantity} {item.productQuantityUnit}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded border text-gray-600 hover:bg-red-50 hover:text-red-600"
-                    aria-label={`Usuń ${item.name}`}
-                    title="Usuń"
-                    onClick={() => deleteMutation.mutate(String(item.code))}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </li>
+                <MealListRow
+                  key={item.code}
+                  item={item}
+                  date={date}
+                  onDelete={(id) => deleteMutation.mutate(String(id))}
+                />
               ))}
             </ul>
 

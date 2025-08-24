@@ -80,6 +80,21 @@ export const deleteMealItem = async (id: string): Promise<void> => {
   if (!response.ok) throw new Error('Failed to delete meal item');
 };
 
+const UpdateMealItemResponseSchema = z.object({
+  item: MealContentRowSchema.nullable(),
+});
+
+export const updateMealConsumedQuantity = async (id: string, productQuantity: number) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/meals/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productQuantity }),
+  });
+  if (!response.ok) throw new Error('Failed to update meal item');
+  const json = await response.json();
+  return UpdateMealItemResponseSchema.parse(json);
+};
+
 const MealSummaryDaySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   calories: z.number(),
