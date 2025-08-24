@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, ScanLine } from 'lucide-react';
 
 import { type SearchItem } from '../data-access-layer/search.ts';
 import { ProductSearch } from './product-search.tsx';
@@ -89,6 +89,7 @@ export const MealsList = ({ date }: MealsListProps) => {
   }, [mealsData]);
 
   const [activeMeal, setActiveMeal] = useState<MealKey | null>(null);
+  const [scannerOpen, setScannerOpen] = useState<MealKey | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -187,13 +188,23 @@ export const MealsList = ({ date }: MealsListProps) => {
           <div key={mealKey} className="rounded border p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">{mealLabels[mealKey]}</h2>
-              <button
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border text-xl leading-none"
-                aria-label={`Dodaj do ${mealLabels[mealKey]}`}
-                onClick={() => setActiveMeal(mealKey)}
-              >
-                <Plus className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border text-xl leading-none"
+                  aria-label={`Skanuj do ${mealLabels[mealKey]}`}
+                  title="Skanuj kod"
+                  onClick={() => setScannerOpen(mealKey)}
+                >
+                  <ScanLine className="h-4 w-4" />
+                </button>
+                <button
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border text-xl leading-none"
+                  aria-label={`Dodaj do ${mealLabels[mealKey]}`}
+                  onClick={() => setActiveMeal(mealKey)}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             <ul className="mt-3 space-y-2">
@@ -261,6 +272,18 @@ export const MealsList = ({ date }: MealsListProps) => {
           </div>
         </div>
       </div>
+      {scannerOpen && (
+        // lazy import to avoid circular dep; inline import here for simplicity
+
+        <ScannerLazy onClose={() => setScannerOpen(null)} />
+      )}
     </div>
   );
 };
+
+// Lightweight wrapper to avoid top-level import churn
+import { BarcodeScannerModal } from './barcode-scanner-modal.tsx';
+
+function ScannerLazy({ onClose }: { onClose: () => void }) {
+  return <BarcodeScannerModal onClose={onClose} />;
+}
