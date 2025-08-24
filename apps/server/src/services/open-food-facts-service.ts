@@ -88,3 +88,52 @@ export async function searchProducts({ query, page, pageSize, signal }: SearchPr
     total: raw.count,
   });
 }
+
+export async function getProductByCode({
+  code,
+  signal,
+}: {
+  readonly code: string;
+  readonly signal?: AbortSignal;
+}): Promise<SearchResponse> {
+  const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`;
+
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'foodie-server/0.1 (+https://foodie.local)',
+    },
+    signal: signal ?? AbortSignal.timeout(8000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenFoodFacts upstream_error: ${response.status}`);
+  }
+
+  const raw = z
+    .object({
+      product: openFoodFactsProductSchema.optional(),
+      status: z.number().optional(),
+    })
+    .parse(await response.json());
+
+  const product = raw.product;
+  const items = product
+    ? [
+        {
+          code: product.code,
+          name: product.product_name_pl ?? product.product_name ?? '',
+          brands: product.brands ?? '',
+          productQuantity: product.product_quantity,
+          productQuantityUnit: product.product_quantity_unit,
+          nutriments: {
+            energyKcal100g: product.nutriments['energy-kcal_100g'],
+            proteins100g: product.nutriments.proteins_100g,
+            fat100g: product.nutriments.fat_100g,
+            carbs100g: product.nutriments.carbohydrates_100g,
+          },
+        },
+      ]
+    : [];
+
+  return searchResponseSchema.parse({ items, page: 1, pageSize: 1, total: items.length });
+}

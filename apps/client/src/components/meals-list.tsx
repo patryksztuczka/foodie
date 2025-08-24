@@ -275,7 +275,7 @@ export const MealsList = ({ date }: MealsListProps) => {
       {scannerOpen && (
         // lazy import to avoid circular dep; inline import here for simplicity
 
-        <ScannerLazy onClose={() => setScannerOpen(null)} />
+        <ScannerLazy onClose={() => setScannerOpen(null)} date={date} meal={scannerOpen} />
       )}
     </div>
   );
@@ -284,6 +284,6 @@ export const MealsList = ({ date }: MealsListProps) => {
 // Lightweight wrapper to avoid top-level import churn
 import { BarcodeScannerModal } from './barcode-scanner-modal.tsx';
 
-function ScannerLazy({ onClose }: { onClose: () => void }) {
-  return <BarcodeScannerModal onClose={onClose} />;
+function ScannerLazy({ onClose, date, meal }: { onClose: () => void; date: string; meal: MealKey }) {
+  return <BarcodeScannerModal onClose={onClose} date={date} meal={meal} />;
 }
