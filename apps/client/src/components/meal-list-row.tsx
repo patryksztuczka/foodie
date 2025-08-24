@@ -17,6 +17,10 @@ export function MealListRow({
 }) {
   const queryClient = useQueryClient();
 
+  function isUuid(value: string): boolean {
+    return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(value);
+  }
+
   const unit = (item.productQuantityUnit ?? '').toLowerCase();
   const isPerHundredUnit =
     unit === 'g' ||
@@ -37,6 +41,7 @@ export function MealListRow({
   useEffect(() => {
     if (!isFinite(debouncedQty)) return;
     const numericId = String(item.code);
+    if (!isUuid(numericId)) return;
     updateMealConsumedQuantity(numericId, Number(debouncedQty))
       .then(() => {
         queryClient.invalidateQueries({ queryKey: ['meals', date] });
@@ -78,10 +83,15 @@ export function MealListRow({
         </div>
       </div>
       <button
-        className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded border text-gray-600 hover:bg-red-50 hover:text-red-600"
+        className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded border text-gray-600 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={`Usuń ${item.name}`}
         title="Usuń"
-        onClick={() => onDelete(String(item.code))}
+        disabled={!isUuid(String(item.code))}
+        onClick={() => {
+          const id = String(item.code);
+          if (!isUuid(id)) return;
+          onDelete(id);
+        }}
       >
         <Trash2 className="h-4 w-4" />
       </button>
